@@ -1,6 +1,12 @@
-needs::needs(drake, mlr, magrittr, mlrMBO, purrr, parallelMap, sf, dplyr, lwgeom,
-             forcats, tibble, rgdal, viridis, rasterVis, lattice, latticeExtra, glue,
-             RSAGA, stringr, GSIF, sp, R.utils, curl, fs)
+# Trouble installing some of these packages, including RSAGA.
+# needs::needs(drake, mlr, magrittr, mlrMBO, purrr, parallelMap, sf, dplyr, lwgeom,
+#              forcats, tibble, rgdal, viridis, rasterVis, lattice, latticeExtra, glue,
+#              RSAGA, stringr, GSIF, sp, R.utils, curl, fs)
+
+library(drake)
+library(magrittr)
+library(R.utils)
+library(tidyverse)
 
 # Plans -----------------------------------------------------------
 
@@ -32,13 +38,27 @@ reports$stage = "reports"
 
 # Combine all -------------------------------------------------------------
 
-plan = bind_plans(data, task, learners, resampling, param_set,
-                  tune_ctrl, tuning_wrapper, benchmark, prediction,
-                  reports)
+plan_no_reports = bind_plans(data, task, learners, resampling, param_set,
+                  tune_ctrl, tuning_wrapper, benchmark, prediction)
+
+# For debugging target invalidation issues: https://github.com/ropensci/drake/issues/615
+plan_no_reports$command <- paste(
+  "{return(TRUE)\n {",
+  plan_no_reports$command,
+  "}}"
+)
+
+plan <- bind_plans(plan_no_reports, reports)
 
 plan %<>% mutate(stage = as.factor(stage))
 
-config = drake_config(plan)
+
+
+# config = drake_config(plan)
+
+make(plan) # Makes false targets quickly
+
+make(plan) # Everything is up to date
 
 # make(plan, keep_going = TRUE, console_log_file=stdout())
 

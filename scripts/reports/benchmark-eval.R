@@ -1,8 +1,8 @@
 reports = drake_plan(
-
-  benchmark_evaluation_report = rmarkdown::render(
+  # Work around https://github.com/rstudio/rmarkdown/issues/1268
+  benchmark_evaluation_report = knitr::knit(
     knitr_in("scripts/rmd/benchmark-eval.Rmd"),
-    output_file = file_out("scripts/rmd/benchmark-eval.Rmd"),
+    output = file_out("scripts/rmd/output-benchmarks.md"), # Important: must be the output file
     quiet = TRUE),
   strings_in_dots = "literals"
 )
